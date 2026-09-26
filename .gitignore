@@ -1,0 +1,35 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Dependencies
+node_modules/
+vendor/
+.venv/
+venv/
+
+# Build and coverage output
+dist/
+build/
+out/
+coverage/
+.coverage
+*.log
+
+# Caches
+.cache/
+.eslintcache
+.pytest_cache/
+.mypy_cache/
+__pycache__/
+*.py[cod]
+
+# Editors and operating systems
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db

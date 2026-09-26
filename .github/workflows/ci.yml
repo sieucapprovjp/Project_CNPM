@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  repository-validation:
+    name: Repository validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Verify required files
+        shell: bash
+        run: |
+          required_files=(
+            AGENTS.md
+            README.md
+            docs/prd.md
+            docs/architecture.md
+            docs/tech_stack.md
+            docs/tasks.md
+            contracts/openapi.yaml
+          )
+
+          for file in "${required_files[@]}"; do
+            test -f "$file" || { echo "Missing required file: $file"; exit 1; }
+          done
+
+      - name: Parse OpenAPI YAML
+        shell: bash
+        run: |
+          ruby -e "require 'yaml'; spec = YAML.load_file('contracts/openapi.yaml'); abort('Missing OpenAPI version') unless spec['openapi']"

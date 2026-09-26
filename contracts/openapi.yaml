@@ -1,0 +1,58 @@
+openapi: 3.1.0
+info:
+  title: Bluemoon API
+  version: 0.1.0
+  description: Initial API contract. Add product endpoints only after their requirements are approved.
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      summary: Check service health
+      tags:
+        - System
+      responses:
+        "200":
+          description: The service is available.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    HealthResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - ok
+    Error:
+      type: object
+      additionalProperties: false
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: array
+              items: {}
+            requestId:
+              type: string
