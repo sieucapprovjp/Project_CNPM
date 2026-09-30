@@ -2,28 +2,104 @@ openapi: 3.1.0
 info:
   title: Bluemoon API
   version: 0.1.0
-  description: Initial API contract. Add product endpoints only after their requirements are approved.
+  description: Backend foundation contract. Add product endpoints only after their requirements are approved.
 paths:
   /health:
     get:
       operationId: getHealth
       summary: Check service health
+      description: Process liveness only. This endpoint does not query the database on each request.
+      security: []
       tags:
         - System
       responses:
         "200":
           description: The service is available.
+          headers:
+            X-Request-Id:
+              description: Server-generated request correlation identifier.
+              schema:
+                type: string
+                format: uuid
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthResponse"
+        "500":
+          description: Unexpected server failure.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 components:
+  parameters:
+    Page:
+      name: page
+      in: query
+      description: Zero-based page index for operations that support pagination.
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    Size:
+      name: size
+      in: query
+      description: Maximum number of items on a page.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    Sort:
+      name: sort
+      in: query
+      description: One field and direction. Each operation must define allowed fields and the default order.
+      schema:
+        type: string
+        pattern: '^[a-zA-Z][a-zA-Z0-9]*,(asc|desc)$'
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    PageMetadata:
+      type: object
+      description: Compose with an operation-specific items array for a paginated result. This is not a standalone response.
+      required:
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        page:
+          type: integer
+          minimum: 0
+        size:
+          type: integer
+          minimum: 1
+          maximum: 100
+        totalElements:
+          type: integer
+          format: int64
+          minimum: 0
+        totalPages:
+          type: integer
+          minimum: 0
+    ErrorDetail:
+      type: object
+      additionalProperties: false
+      required:
+        - code
+        - message
+      properties:
+        field:
+          type: string
+          description: JSON property path; omitted for whole-request errors.
+        code:
+          type: string
+        message:
+          type: string
     HealthResponse:
       type: object
       additionalProperties: false
@@ -53,6 +129,7 @@ components:
               type: string
             details:
               type: array
-              items: {}
+              items:
+                $ref: "#/components/schemas/ErrorDetail"
             requestId:
               type: string
