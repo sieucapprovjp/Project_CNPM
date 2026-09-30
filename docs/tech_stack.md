@@ -35,7 +35,7 @@ Exact frontend dependency versions are defined by `frontend/package.json` and `f
 | --- | --- | --- |
 | Java | 17 | Backend language and runtime |
 | Spring Boot | 3.5.16 | Application framework |
-| Maven | Version locked by Maven Wrapper | Build and dependency management |
+| Maven | 3.9.11, Wrapper 3.3.4 | Build and dependency management |
 | Spring Web | Managed by Spring Boot | REST API layer |
 | Spring Data JPA | Managed by Spring Boot | Persistence abstraction |
 | Spring Validation | Managed by Spring Boot | Request and model validation |

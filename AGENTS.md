@@ -34,7 +34,7 @@ If documents conflict, stop and report the conflict instead of guessing.
 
 ## Project State
 
-The final technology stack and version policy are recorded in `docs/tech_stack.md`, but the applications are not initialized. Frontend dependency versions are locked by `package.json` and `package-lock.json` after initialization. Major framework upgrades require an accepted architecture decision.
+The final technology stack and version policy are recorded in `docs/tech_stack.md`. The backend foundation is initialized; the frontend is not yet initialized. Frontend dependency versions will be locked by `package.json` and `package-lock.json` after initialization. Major framework upgrades require an accepted architecture decision.
 
 ## Completion Checklist
 

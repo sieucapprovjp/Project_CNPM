@@ -6,8 +6,8 @@
 | --- | --- |
 | Product | BlueMoon Apartment Management and Fee Collection System |
 | Status | Draft — source requirements captured, open questions remain |
-| Owner | TBD |
-| Last reviewed | 2026-09-26 |
+| Owner | Project leader (requirement decision-maker) |
+| Last reviewed | 2026-09-30 |
 | Primary source | Course assignment: BlueMoon apartment fee-management problem statement |
 
 ## 1. Product Summary
@@ -29,6 +29,7 @@ The current process is manual and uses tools such as Excel, but the Management B
 | User group | Context | Primary need |
 | --- | --- | --- |
 | Management Board (`Ban quản trị`) | Staff responsible for apartment administration and fee collection | Manage fees, household payments, apartments, residents, population information, searches, statistics, and their own account |
+| Account administrator | Internal account-provisioning responsibility | Issue accounts to Management Board staff; detailed permissions beyond account provisioning remain TBD |
 
 ### 3.1 Non-System Stakeholders
 
@@ -50,7 +51,7 @@ Households, residents, and apartment owners are subjects of managed data and fee
 
 ### 5.1 Version 1.0 — In Scope
 
-- Account registration flow, subject to the clarification in `Open Questions`.
+- Internal account provisioning: an initial administrator account, administrator-issued staff accounts, and staff password setup through an activation link sent by email (ADR-004 and ADR-005).
 - Login for Management Board users.
 - Management of the logged-in user's personal information.
 - Password change.
@@ -79,6 +80,7 @@ Households, residents, and apartment owners are subjects of managed data and fee
 The source does not request the following, so they must not be assumed as v1.0 requirements without an approved requirement change:
 
 - Resident self-service portal.
+- Public self-registration and resident login accounts.
 - Online payment gateway integration.
 - Mobile application.
 - Direct integration with government systems.
@@ -128,7 +130,7 @@ Priority uses `Must`, `Should`, `Could`, and `Won't` relative to **v1.0**.
 | US-AUTH-001 | As a Management Board user, I want to log in so that I can access protected management functions. | Must | A valid Management Board account can authenticate; protected v1.0 management functions are unavailable before successful login. |
 | US-AUTH-002 | As a Management Board user, I want to change my password so that I can maintain my account security. | Must | An authenticated user can change the password for their own account. |
 | US-AUTH-003 | As a Management Board user, I want to manage my personal information so that my account information remains current. | Must | An authenticated user can view and maintain the personal information that the system stores for their account. Exact editable fields are TBD. |
-| US-AUTH-004 | As a user, I want an account-registration flow so that an account can be created. | Must | A registration flow exists, but who may register and how registration relates to “provided accounts” must be clarified before implementation. |
+| US-AUTH-004 | As an account administrator, I want to issue internal staff accounts so that Management Board staff can access the system. | Must | The administrator supplies the staff recipient's unique login email. The system emails a single-use activation link valid for 24 hours; staff set their own password to activate the account before normal login. For an unactivated account, the administrator can send a replacement link that invalidates every previous link. No password is sent by email. Public self-registration is unavailable and ordinary staff cannot issue accounts. See section 9.2 for acceptance criteria and section 14 for remaining decisions. |
 | US-FEE-001 | As a Management Board user, I want to manage fee and contribution information so that the system represents the amounts households may need to pay. | Must | The system can maintain fee/contribution records for the v1.0 fee types. Exact CRUD semantics are TBD. |
 | US-FEE-002 | As a Management Board user, I want mandatory monthly fees to reflect the source fee rules so that household obligations can be determined. | Must | Service fees can use apartment area and a configured rate; management fees can use apartment area and a configured BlueMoon management-fee rate. |
 | US-FEE-003 | As a Management Board user, I want voluntary contributions to remain optional so that households are not treated as obligatorily owing them. | Must | Contribution records can be identified as voluntary and campaign/period-based. |
@@ -152,7 +154,12 @@ Priority uses `Must`, `Should`, `Could`, and `Won't` relative to **v1.0**.
 | FR-AUTH-001 | The system shall require successful login before the Management Board can access the protected apartment, resident, population, fee, payment, search, statistics, and account-management functions. | US-AUTH-001 | Draft |
 | FR-AUTH-002 | The system shall allow an authenticated Management Board user to change their password. | US-AUTH-002 | Draft |
 | FR-AUTH-003 | The system shall allow an authenticated Management Board user to manage the personal information stored for their own account. | US-AUTH-003 | Draft |
-| FR-AUTH-004 | The system shall provide an account-registration business flow. The registration policy is TBD because the source also states that Management Board users log in with provided accounts. | US-AUTH-004 | Blocked by clarification |
+| FR-AUTH-004 | The system shall implement account registration as internal staff-account provisioning by an account administrator. Public self-registration and account issuance by ordinary staff shall be unavailable. | US-AUTH-004 | Policy accepted (ADR-004); account fields and validation TBD |
+| FR-AUTH-005 | Staff shall activate an issued account by setting their own password through a single-use link sent by email and valid for 24 hours from issuance. Normal login shall remain unavailable until activation succeeds. | US-AUTH-004 | Accepted (ADR-005); password policy TBD |
+| FR-AUTH-006 | When explicitly enabled through backend runtime configuration and the account store is empty, the system shall create exactly one initial account administrator in pending-activation state using the configured email, then send the normal 24-hour activation link. It shall not create or reset an account when any account already exists, and no bootstrap password shall exist in code, migration, or configuration. | US-AUTH-004 | Accepted (ADR-006) |
+| FR-AUTH-007 | When an administrator issues a staff account, the system shall send account-access instructions and the activation link to the staff email supplied by the administrator. The email shall not contain a password. | US-AUTH-004 | Accepted (ADR-005); email provider and send-failure handling TBD |
+| FR-AUTH-008 | A staff email shall be the account's login identifier and shall identify at most one account. | US-AUTH-001, US-AUTH-004 | Accepted (ADR-005); email canonicalization rules TBD |
+| FR-AUTH-009 | An account administrator shall be able to send a replacement activation link for an unactivated account. Issuing the replacement shall invalidate every prior activation link for that account, and the replacement shall be valid for 24 hours from its issuance. | US-AUTH-004 | Accepted (ADR-005); send-failure feedback TBD |
 
 ### 8.2 Fee And Contribution Management
 
@@ -214,12 +221,51 @@ Priority uses `Must`, `Should`, `Could`, and `Won't` relative to **v1.0**.
 
 The assignment explicitly identifies these business flows:
 
-1. Account registration.
+1. Account registration, interpreted as administrator-issued internal staff accounts under ADR-004.
 2. Create a fee/collection item.
 3. Collect fees.
 4. View statistics for contributions/collections.
 
 Detailed use-case flows, alternate flows, validation rules, and permissions are not included in the source and should be specified before implementation of each flow.
+
+### 9.1 Internal Account Provisioning — Accepted Direction
+
+The requirement decision-maker selected internal provisioning on 2026-09-29 and email activation on 2026-09-30:
+
+1. On initial deployment, an operator explicitly enables bootstrap and supplies the initial administrator email through backend runtime configuration. If the account store is empty, the backend creates exactly one pending `ACCOUNT_ADMIN` account and sends the normal 24-hour activation email. It creates no password. Later startups do not create, replace, reset, or elevate any account when an account already exists.
+2. The administrator logs in and issues an account for a Management Board staff member, supplying a unique email address that becomes the account's login identifier. The account awaits activation.
+3. The system sends an email containing account-access instructions and a single-use activation link valid for 24 hours. It does not generate or email a temporary password for this flow.
+4. The staff member opens the link and submits their chosen password. A successful submission activates the account and consumes the link; merely opening the link does not activate the account or consume it.
+5. The staff member logs in and accesses the management functions permitted for that account.
+
+For an unactivated account, the administrator may send a replacement activation email. The replacement link receives a new 24-hour validity period and invalidates every previous activation link for that account.
+
+This resolves who creates accounts, the initial-administrator bootstrap, the login identifier, how staff receive activation instructions, link lifetime, and replacement-link behavior. Remaining account fields, email canonicalization, password policy, email failure handling/provider, detailed business permissions, and login-session token lifecycle must be specified before implementation. The flow does not yet approve account deletion, locking, password recovery, or granting administrator privileges to additional users.
+
+### 9.2 Email Activation Acceptance Criteria
+
+- An account administrator can issue a staff account with a unique recipient email that becomes the login identifier; an ordinary staff member or unauthenticated caller cannot issue accounts.
+- An email already assigned to an account cannot be used to issue another account.
+- The recipient receives an email containing account-access instructions and an activation link, with no temporary or chosen password in the message.
+- A newly issued account cannot log in normally or access protected management functions until password setup and activation succeed. Sending or opening the email alone does not grant access.
+- A valid, unused link allows password setup without an existing login session for 24 hours from issuance. After successful submission, the staff member can log in with their email and chosen password.
+- Opening the link alone does not consume it. An invalid, expired, or already-used link cannot activate an account or set/change its password; the page explains that activation cannot proceed.
+- Activation links allow one successful password setup only, including concurrent submission attempts.
+- An account administrator can send a replacement activation link only while the account remains unactivated. Once the replacement is issued, every older link fails and the replacement expires 24 hours after its own issuance.
+- An email-send failure does not activate the account. Provider acceptance of a message is not proof of inbox delivery; the detailed admin feedback and recovery behavior remain TBD.
+
+Implementation verification must cover these cases through the real frontend/backend flow and include a controlled email-delivery check. It must include the 24-hour boundary, duplicate email, replacement-link invalidation, invalid/used links, concurrent activation, and pending-account access denial. Password validation, email canonicalization, and email-send failure recovery cases must be completed once their policies are agreed.
+
+### 9.3 Initial Administrator Bootstrap Acceptance Criteria
+
+- Bootstrap is disabled by default and requires an explicit backend-only runtime setting plus an initial administrator email.
+- With bootstrap enabled and an empty account store, concurrent application starts result in exactly one pending `ACCOUNT_ADMIN` account for the configured email and one effective activation token.
+- The initial administrator uses the same email activation behavior defined in section 9.2. No plaintext or temporary password is stored in source control, a Flyway migration, configuration, logs, or email.
+- If any account already exists, startup never creates another bootstrap administrator, changes an email or role, resets a password, or issues a new activation link automatically.
+- Leaving bootstrap configuration present after successful initialization cannot modify an existing account. Operators should still remove or disable it after the initial account is created.
+- A pending initial administrator cannot use protected functions until activation succeeds.
+- Recovery for an expired link or email-send failure is an explicit operator action available only while no activated account administrator exists. It rotates the activation token and sends a replacement email; it is not exposed as a public HTTP endpoint. The exact operator command will be specified with the implementation and deployment environment.
+- Logs may report bootstrap state and the target email but must not contain raw activation tokens, passwords, or mail-provider credentials.
 
 ## 10. Non-Functional Requirements
 
@@ -270,7 +316,7 @@ The source does not define measurable success targets. Do not invent them before
 | Item | Type | Impact | Response |
 | --- | --- | --- | --- |
 | “Manage” is not decomposed into exact CRUD operations in the source. | Requirement gap | High | Define allowed operations per resource before coding destructive actions. |
-| The source lists account registration but also states that Management Board users log in with accounts that have been provided. | Requirement conflict / ambiguity | High | Clarify account-provisioning and registration policy before implementing registration. |
+| Email activation and initial-administrator bootstrap are accepted, but password policy, email canonicalization, provider selection, and send-failure handling remain unspecified. | Requirement gap | High | Follow ADR-004 through ADR-006; resolve the remaining policies before implementation and verify email delivery. |
 | Exact data fields for apartments, residents, population changes, temporary absence, and temporary residence are not specified. | Requirement gap | High | Define domain fields before database and API design are finalized. |
 | Exact statistics are not specified. | Requirement gap | Medium | Agree on required metrics before implementing the statistics module. |
 | Search fields and filtering behavior are not specified. | Requirement gap | Medium | Define per-resource search behavior in the API contract. |
@@ -282,8 +328,8 @@ The source does not define measurable success targets. Do not invent them before
 
 These questions must be answered before the corresponding implementation is considered stable:
 
-1. **Account registration:** Is registration public, Management-Board-only, invitation-based, or performed by an administrator? How does it relate to the statement that login accounts are already provided?
-2. **Roles:** Is there only one Management Board role in v1.0, or are multiple permission levels required?
+1. **Account provisioning details:** Administrator-issued staff accounts use a unique login email, a 24-hour activation link, and administrator-issued replacement links that invalidate all prior links. The initial administrator uses the empty-store, configuration-driven bootstrap in ADR-006. How are emails canonicalized, and what other account fields/password rules are required? Which email provider/sender is used, and how are sending failures reported and recovered? Separately, what are the login-session token issuance, expiry, refresh, revocation, and storage rules?
+2. **Permissions:** Only the account administrator may issue staff accounts. What business functions may administrators and staff access, and are any further permission distinctions needed?
 3. **Apartment fields:** Which fields are mandatory beyond apartment area? Examples are intentionally not assumed here.
 4. **Household model:** What is the exact relationship between apartment, household, apartment owner, and residents?
 5. **Resident fields:** Which resident identity and demographic fields must be stored?

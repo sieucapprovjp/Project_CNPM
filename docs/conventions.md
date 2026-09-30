@@ -14,6 +14,18 @@
 - `develop`: integration branch when the team needs it
 - `feature/<short-name>`: feature work
 - `fix/<short-name>`: bug fixes
+- `codex/<short-name>`: agent-created work
+
+For the initial milestone, integrate through `main`. The five-member feature workflow and shared-file coordination rules are defined in [`team_workflow.md`](team_workflow.md).
+
+## Naming
+
+- Use consistent English domain names across frontend modules, backend packages, and API resources.
+- Frontend feature folders use `kebab-case`; React components use `PascalCase`, hooks use `useCamelCase`, and other TypeScript modules use `camelCase`.
+- Java packages use lowercase names without hyphens; classes use `PascalCase` and methods/fields use `camelCase`.
+- REST resource path segments use plural `kebab-case`; JSON properties use `camelCase`.
+- SQL tables and columns use `snake_case`. Entity fields and identifiers still require domain approval.
+- Use a feature prefix for TanStack Query keys, followed by the operation and parameters, to prevent collisions between features.
 
 ## Commits
 

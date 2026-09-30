@@ -6,7 +6,7 @@ Bluemoon is a software project currently in the discovery and planning phase. Th
 
 - Product scope: not finalized
 - Technology stack: finalized
-- Backend: not initialized
+- Backend: foundation initialized (health, security guard, error handling, PostgreSQL/Flyway configuration)
 - Frontend: not initialized
 
 ## Repository
@@ -33,6 +33,7 @@ See [`docs/project_map.md`](docs/project_map.md) for the complete map.
 ## Documentation Index
 
 - [Product requirements](docs/prd.md)
+- [Use case model](docs/use_cases.md)
 - [Architecture](docs/architecture.md)
 - [Project map](docs/project_map.md)
 - [Technology stack](docs/tech_stack.md)
@@ -41,6 +42,7 @@ See [`docs/project_map.md`](docs/project_map.md) for the complete map.
 - [API](docs/api.md)
 - [Database schema](docs/database_schema.md)
 - [Conventions](docs/conventions.md)
+- [Team workflow](docs/team_workflow.md)
 - [Error handling](docs/error_handling.md)
 - [Testing strategy](docs/testing_strategy.md)
 - [Tasks](docs/tasks.md)
@@ -49,4 +51,6 @@ See [`docs/project_map.md`](docs/project_map.md) for the complete map.
 
 ## Development
 
-Local commands will be added when the frontend and backend are initialized. Do not commit real credentials; copy `.env.example` to a local `.env` when environment variables become necessary.
+For backend development, install JDK 17 and Docker Compose, then follow [`docs/setup.md`](docs/setup.md). Copy `.env.example` to an untracked `.env`, configure the local database password, run `docker compose up -d --wait`, and start the backend with `powershell -File scripts/backend.ps1 run` (Windows) or `bash scripts/backend.sh run` (macOS/Linux).
+
+`GET http://localhost:8080/health` returns `{"status":"ok"}`. Product APIs remain closed until authentication and feature permissions are implemented. The frontend has not been initialized.

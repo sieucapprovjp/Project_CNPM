@@ -1,0 +1,106 @@
+@startuml
+title BlueMoon Apartment Management and Fee Collection System
+left to right direction
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam usecase {
+  BackgroundColor #EFF6FF
+  BorderColor #2563EB
+  ArrowColor #475569
+}
+skinparam actor {
+  BorderColor #0F172A
+  FontColor #0F172A
+}
+
+actor "Management Board\n(Ban quan tri)" as Board
+actor "Account administrator" as Admin
+actor "Email delivery service" as Mail
+
+rectangle "BlueMoon v1.0" as V1 {
+  package "Account and Access" {
+    usecase "Issue staff account\nand email activation instructions" as UC_REGISTER
+    usecase "Send replacement\nactivation link" as UC_RESEND
+    usecase "Set password and activate\nvia emailed link" as UC_ACTIVATE
+    usecase "Log in" as UC_LOGIN
+    usecase "Manage own\npersonal information" as UC_PROFILE
+    usecase "Change password" as UC_PASSWORD
+  }
+
+  package "Fee Collection" {
+    usecase "Manage fee and\ncontribution information" as UC_FEES
+    usecase "Record household\nfee collection" as UC_PAYMENT
+    usecase "View basic collection\nstatistics" as UC_STATS
+  }
+
+  package "Apartment and Population" {
+    usecase "Manage apartment\ninformation" as UC_APARTMENT
+    usecase "Manage resident\ninformation" as UC_RESIDENT
+    usecase "Manage household\npopulation information" as UC_HOUSEHOLD
+    usecase "Record population\nchanges" as UC_POP_CHANGE
+    usecase "Record temporary\nabsence" as UC_ABSENCE
+    usecase "Record temporary\nresidence" as UC_RESIDENCE
+  }
+
+  package "Information Access" {
+    usecase "Search and look up\nmanagement information" as UC_SEARCH
+  }
+}
+
+rectangle "BlueMoon v2.0 (deferred)" as V2 #F8FAFC {
+  usecase "Manage monthly\nparking fees" as UC_PARKING #F1F5F9
+  usecase "Manage electricity, water,\nand internet charges" as UC_UTILITIES #F1F5F9
+}
+
+Admin --> UC_REGISTER
+Mail -- UC_REGISTER
+Admin --> UC_RESEND
+Mail -- UC_RESEND
+Admin --> UC_LOGIN
+Board --> UC_ACTIVATE
+Board --> UC_LOGIN
+Board --> UC_PROFILE
+Board --> UC_PASSWORD
+Board --> UC_FEES
+Board --> UC_PAYMENT
+Board --> UC_STATS
+Board --> UC_APARTMENT
+Board --> UC_RESIDENT
+Board --> UC_HOUSEHOLD
+Board --> UC_POP_CHANGE
+Board --> UC_ABSENCE
+Board --> UC_RESIDENCE
+Board --> UC_SEARCH
+
+Board ..> UC_PARKING : future
+Board ..> UC_UTILITIES : future
+
+note right of UC_REGISTER
+  ADR-004: internal administrator-issued accounts.
+  No public self-registration or resident accounts.
+  ADR-005: activation instructions sent by email.
+  Email is the unique login identifier.
+  Bootstrap follows ADR-006; email provider and failure handling TBD.
+end note
+
+note right of UC_ACTIVATE
+  Single-use link valid for 24 hours.
+  Staff choose their password.
+  Successful password setup activates the account.
+  Opening the link alone does not consume it.
+  A replacement invalidates every prior link.
+end note
+
+note bottom of V1
+  All management functions require authentication.
+  Exact CRUD operations, fields, permissions, search filters,
+  payment rules, and statistics remain subject to PRD clarification.
+end note
+
+note bottom of V2
+  Not part of v1.0.
+  The monthly car parking fee is still ambiguous.
+end note
+@enduml

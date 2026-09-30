@@ -27,12 +27,31 @@ Exact dependency versions are locked by `package.json` and `package-lock.json`. 
 
 ## Planned Structure
 
-Use feature-oriented modules once product features are known. Keep application bootstrapping, routing, shared UI, API access, and feature code separate. Final paths will be documented after initialization.
+These are the agreed paths for initialization, not existing application files:
+
+```text
+frontend/src/
+  app/
+    providers/
+    router/
+  layouts/
+  components/
+  lib/api/
+  features/
+    <feature>/
+      api/
+      components/
+      pages/
+      types/
+  styles/
+```
+
+Colocate component and hook tests as `*.test.ts` or `*.test.tsx`. Create folders only as needed. Feature owners expose their route definitions for composition by `app/router`; the application shell and providers remain shared. `components` contains reusable UI, while business-specific UI stays in the feature.
 
 ## State And Data
 
 - Server-state approach: TanStack Query
-- Local-state approach: to be defined
+- Local-state approach: React component state; use context for genuinely shared UI state when needed
 - Form handling: to be defined
 - HTTP client: a configured Axios instance at the API boundary
 - Routing: React Router

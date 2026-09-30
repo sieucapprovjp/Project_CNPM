@@ -43,7 +43,7 @@ Tests should protect important product behavior, contracts, data integrity, and 
 
 ## Continuous Integration
 
-GitHub Actions is the CI platform. The initial workflow validates repository structure and the OpenAPI file. Add the following checks when applications are initialized:
+GitHub Actions validates repository structure and the OpenAPI file, and runs backend `verify` on Java 17 with a PostgreSQL 18 service. The frontend checks below will be added when that application is initialized:
 
 - Backend Maven test and package
 - Frontend ESLint and Prettier checks
@@ -56,8 +56,8 @@ GitHub Actions is the CI platform. The initial workflow validates repository str
 | Area | Command |
 | --- | --- |
 | Repository validation | Defined in `.github/workflows/ci.yml` |
-| Backend tests | `./mvnw test` or `mvnw.cmd test` |
-| Backend build | `./mvnw verify` or `mvnw.cmd verify` |
+| Backend tests (no DB) | `bash mvnw test` or `.\mvnw.cmd test` from `backend/` |
+| Backend build and integration tests | `bash mvnw verify` or `.\mvnw.cmd verify` from `backend/`, with PostgreSQL environment variables |
 | Frontend tests | `npm run test` from `frontend/` |
 | Frontend lint | `npm run lint` from `frontend/` |
 | Frontend build | `npm run build` from `frontend/` |
